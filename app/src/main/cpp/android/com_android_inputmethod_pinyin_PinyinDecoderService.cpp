@@ -15,7 +15,7 @@
  */
 
 #include <assert.h>
-#include <cutils/log.h>
+
 #include <jni.h>
 #include <string.h>
 #include <sys/types.h>
@@ -214,7 +214,7 @@ JNIEXPORT jboolean JNICALL nativeImFlushCache(JNIEnv *env, jclass clazz) {
 
 JNIEXPORT jint JNICALL nativeImGetPredictsNum(JNIEnv *env, jclass clazz,
                                               jstring fixed_str) {
-  char16 *fixed_ptr = (char16*)(*env).GetStringChars(fixed_str, false);
+  char16 *fixed_ptr = (char16*)(*env).GetStringChars(fixed_str, JNI_FALSE);
   size_t fixed_len = (size_t)(*env).GetStringLength(fixed_str);
 
   char16 fixed_buf[kMaxPredictSize + 1];
@@ -388,11 +388,8 @@ static int registerNativeMethods(JNIEnv* env, const char* className,
     }
 
     clazz = env->FindClass("java/io/FileDescriptor");
-    LOG_FATAL_IF(clazz == NULL, "Unable to find Java class java.io.FileDescriptor");
     gFileDescriptorOffsets.mClass = (jclass) env->NewGlobalRef(clazz);
     gFileDescriptorOffsets.mDescriptor = env->GetFieldID(clazz, "descriptor", "I");
-    LOG_FATAL_IF(gFileDescriptorOffsets.mDescriptor == NULL,
-                 "Unable to find descriptor field in java.io.FileDescriptor");
 
     return JNI_TRUE;
 }

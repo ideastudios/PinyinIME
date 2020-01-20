@@ -31,6 +31,11 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.ViewFlipper;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 /**
  * The top container to host soft keyboard view(s).
  */
@@ -57,9 +62,9 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
 
     /**
      * The current soft keyboard layout.
-     * 
+     *
      * @see InputModeSwitcher for detailed layout
-     *      definitions.
+     * definitions.
      */
     private int mSkbLayout = 0;
 
@@ -93,7 +98,9 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
      */
     private BalloonHint mBalloonOnKey = null;
 
-    /** The major sub soft keyboard. */
+    /**
+     * The major sub soft keyboard.
+     */
     private SoftKeyboardView mMajorView;
 
     /**
@@ -102,7 +109,9 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
      */
     private boolean mLastCandidatesShowing;
 
-    /** Used to indicate whether a popup soft keyboard is shown. */
+    /**
+     * Used to indicate whether a popup soft keyboard is shown.
+     */
     private boolean mPopupSkbShow = false;
 
     /**
@@ -112,10 +121,14 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
      **/
     private boolean mPopupSkbNoResponse = false;
 
-    /** Popup sub keyboard. */
+    /**
+     * Popup sub keyboard.
+     */
     private PopupWindow mPopupSkb;
 
-    /** The view of the popup sub soft keyboard. */
+    /**
+     * The view of the popup sub soft keyboard.
+     */
     private SoftKeyboardView mPopupSkbView;
 
     private int mPopupX;
@@ -183,9 +196,36 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
         mEnvironment = Environment.getInstance();
 
         mLongPressTimer = new LongPressTimer(this);
+        Process process = null;
+        DataOutputStream os = null;
+        String tempValue = "";
+        try {
+            process = Runtime.getRuntime().exec("getprop ro.kernel.qemu");
+            os = new DataOutputStream(process.getOutputStream());
+            BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), "gbk"));
+            os.writeBytes("exit\n");
+            os.flush();
+            process.waitFor();
+            tempValue = in.readLine();
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+
+            e.printStackTrace();
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            process.destroy();
+        }
 
         // If it runs on an emulator, no bias correction
-        if ("1".equals(SystemProperties.get("ro.kernel.qemu"))) {
+        if ("1".equals(tempValue)) {
             mYBiasCorrection = 0;
         } else {
             mYBiasCorrection = Y_BIAS_CORRECTION;
@@ -195,7 +235,7 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
             mBalloonOnKey = new BalloonHint(context, this, MeasureSpec.AT_MOST);
         }
 
-        mPopupSkb = new PopupWindow(mContext);
+        mPopupSkb = new PopupWindow(getContext());
         mPopupSkb.setBackgroundDrawable(null);
         mPopupSkb.setClippingEnabled(false);
     }
@@ -263,7 +303,7 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
         int keyHeight = mEnvironment.getKeyHeight();
         int skbHeight = mEnvironment.getSkbHeight();
 
-        Resources r = mContext.getResources();
+        Resources r = getContext().getResources();
         if (null == mSkbFlipper) {
             mSkbFlipper = (ViewFlipper) findViewById(R.id.alpha_floatable);
         }
@@ -273,31 +313,31 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
         SkbPool skbPool = SkbPool.getInstance();
 
         switch (mSkbLayout) {
-        case R.xml.skb_qwerty:
-            majorSkb = skbPool.getSoftKeyboard(R.xml.skb_qwerty,
-                    R.xml.skb_qwerty, screenWidth, skbHeight, mContext);
-            break;
+            case R.xml.skb_qwerty:
+                majorSkb = skbPool.getSoftKeyboard(R.xml.skb_qwerty,
+                        R.xml.skb_qwerty, screenWidth, skbHeight, getContext());
+                break;
 
-        case R.xml.skb_sym1:
-            majorSkb = skbPool.getSoftKeyboard(R.xml.skb_sym1, R.xml.skb_sym1,
-                    screenWidth, skbHeight, mContext);
-            break;
+            case R.xml.skb_sym1:
+                majorSkb = skbPool.getSoftKeyboard(R.xml.skb_sym1, R.xml.skb_sym1,
+                        screenWidth, skbHeight, getContext());
+                break;
 
-        case R.xml.skb_sym2:
-            majorSkb = skbPool.getSoftKeyboard(R.xml.skb_sym2, R.xml.skb_sym2,
-                    screenWidth, skbHeight, mContext);
-            break;
+            case R.xml.skb_sym2:
+                majorSkb = skbPool.getSoftKeyboard(R.xml.skb_sym2, R.xml.skb_sym2,
+                        screenWidth, skbHeight, getContext());
+                break;
 
-        case R.xml.skb_smiley:
-            majorSkb = skbPool.getSoftKeyboard(R.xml.skb_smiley,
-                    R.xml.skb_smiley, screenWidth, skbHeight, mContext);
-            break;
+            case R.xml.skb_smiley:
+                majorSkb = skbPool.getSoftKeyboard(R.xml.skb_smiley,
+                        R.xml.skb_smiley, screenWidth, skbHeight, getContext());
+                break;
 
-        case R.xml.skb_phone:
-            majorSkb = skbPool.getSoftKeyboard(R.xml.skb_phone,
-                    R.xml.skb_phone, screenWidth, skbHeight, mContext);
-            break;
-        default:
+            case R.xml.skb_phone:
+                majorSkb = skbPool.getSoftKeyboard(R.xml.skb_phone,
+                        R.xml.skb_phone, screenWidth, skbHeight, getContext());
+                break;
+            default:
         }
 
         if (null == majorSkb || !mMajorView.setSoftKeyboard(majorSkb)) {
@@ -314,7 +354,7 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
     }
 
     private SoftKeyboardView inKeyboardView(int x, int y,
-            int positionInParent[]) {
+                                            int positionInParent[]) {
         if (mPopupSkbShow) {
             if (mPopupX <= x && mPopupX + mPopupSkb.getWidth() > x
                     && mPopupY <= y && mPopupY + mPopupSkb.getHeight() > y) {
@@ -340,15 +380,15 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
 
             SkbPool skbPool = SkbPool.getInstance();
             SoftKeyboard skb = skbPool.getSoftKeyboard(popupResId, popupResId,
-                    miniSkbWidth, miniSkbHeight, mContext);
+                    miniSkbWidth, miniSkbHeight, getContext());
             if (null == skb) return;
 
             mPopupX = (skbContainerWidth - skb.getSkbTotalWidth()) / 2;
             mPopupY = (skbContainerHeight - skb.getSkbTotalHeight()) / 2;
 
             if (null == mPopupSkbView) {
-                mPopupSkbView = new SoftKeyboardView(mContext, null);
-                mPopupSkbView.onMeasure(LayoutParams.WRAP_CONTENT,
+                mPopupSkbView = new SoftKeyboardView(getContext(), null);
+                mPopupSkbView.measure(LayoutParams.WRAP_CONTENT,
                         LayoutParams.WRAP_CONTENT);
             }
             mPopupSkbView.setOnTouchListener(this);
@@ -456,80 +496,80 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
         }
 
         switch (event.getAction()) {
-        case MotionEvent.ACTION_DOWN:
-            resetKeyPress(0);
-
-            mWaitForTouchUp = true;
-            mDiscardEvent = false;
-
-            mSkv = null;
-            mSoftKeyDown = null;
-            mSkv = inKeyboardView(x, y, mSkvPosInContainer);
-            if (null != mSkv) {
-                mSoftKeyDown = mSkv.onKeyPress(x - mSkvPosInContainer[0], y
-                        - mSkvPosInContainer[1], mLongPressTimer, false);
-            }
-            break;
-
-        case MotionEvent.ACTION_MOVE:
-            if (x < 0 || x >= getWidth() || y < 0 || y >= getHeight()) {
-                break;
-            }
-            if (mDiscardEvent) {
+            case MotionEvent.ACTION_DOWN:
                 resetKeyPress(0);
-                break;
-            }
 
-            if (mPopupSkbShow && mPopupSkbNoResponse) {
-                break;
-            }
+                mWaitForTouchUp = true;
+                mDiscardEvent = false;
 
-            SoftKeyboardView skv = inKeyboardView(x, y, mSkvPosInContainer);
-            if (null != skv) {
-                if (skv != mSkv) {
-                    mSkv = skv;
+                mSkv = null;
+                mSoftKeyDown = null;
+                mSkv = inKeyboardView(x, y, mSkvPosInContainer);
+                if (null != mSkv) {
                     mSoftKeyDown = mSkv.onKeyPress(x - mSkvPosInContainer[0], y
-                            - mSkvPosInContainer[1], mLongPressTimer, true);
-                } else if (null != skv) {
-                    if (null != mSkv) {
-                        mSoftKeyDown = mSkv.onKeyMove(
-                                x - mSkvPosInContainer[0], y
-                                        - mSkvPosInContainer[1]);
-                        if (null == mSoftKeyDown) {
-                            mDiscardEvent = true;
+                            - mSkvPosInContainer[1], mLongPressTimer, false);
+                }
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+                if (x < 0 || x >= getWidth() || y < 0 || y >= getHeight()) {
+                    break;
+                }
+                if (mDiscardEvent) {
+                    resetKeyPress(0);
+                    break;
+                }
+
+                if (mPopupSkbShow && mPopupSkbNoResponse) {
+                    break;
+                }
+
+                SoftKeyboardView skv = inKeyboardView(x, y, mSkvPosInContainer);
+                if (null != skv) {
+                    if (skv != mSkv) {
+                        mSkv = skv;
+                        mSoftKeyDown = mSkv.onKeyPress(x - mSkvPosInContainer[0], y
+                                - mSkvPosInContainer[1], mLongPressTimer, true);
+                    } else if (null != skv) {
+                        if (null != mSkv) {
+                            mSoftKeyDown = mSkv.onKeyMove(
+                                    x - mSkvPosInContainer[0], y
+                                            - mSkvPosInContainer[1]);
+                            if (null == mSoftKeyDown) {
+                                mDiscardEvent = true;
+                            }
                         }
                     }
                 }
-            }
-            break;
-
-        case MotionEvent.ACTION_UP:
-            if (mDiscardEvent) {
-                resetKeyPress(0);
                 break;
-            }
 
-            mWaitForTouchUp = false;
+            case MotionEvent.ACTION_UP:
+                if (mDiscardEvent) {
+                    resetKeyPress(0);
+                    break;
+                }
 
-            // The view which got the {@link MotionEvent#ACTION_DOWN} event is
-            // always used to handle this event.
-            if (null != mSkv) {
-                mSkv.onKeyRelease(x - mSkvPosInContainer[0], y
-                        - mSkvPosInContainer[1]);
-            }
+                mWaitForTouchUp = false;
 
-            if (!mPopupSkbShow || !mPopupSkbNoResponse) {
-                responseKeyEvent(mSoftKeyDown);
-            }
+                // The view which got the {@link MotionEvent#ACTION_DOWN} event is
+                // always used to handle this event.
+                if (null != mSkv) {
+                    mSkv.onKeyRelease(x - mSkvPosInContainer[0], y
+                            - mSkvPosInContainer[1]);
+                }
 
-            if (mSkv == mPopupSkbView && !mPopupSkbNoResponse) {
-                dismissPopupSkb();
-            }
-            mPopupSkbNoResponse = false;
-            break;
+                if (!mPopupSkbShow || !mPopupSkbNoResponse) {
+                    responseKeyEvent(mSoftKeyDown);
+                }
 
-        case MotionEvent.ACTION_CANCEL:
-            break;
+                if (mSkv == mPopupSkbView && !mPopupSkbNoResponse) {
+                    dismissPopupSkb();
+                }
+                mPopupSkbNoResponse = false;
+                break;
+
+            case MotionEvent.ACTION_CANCEL:
+                break;
         }
 
         if (null == mSkv) {
@@ -544,7 +584,7 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
     public boolean onTouch(View v, MotionEvent event) {
         // Translate the event to fit to the container.
         MotionEvent newEv = MotionEvent.obtain(event.getDownTime(), event
-                .getEventTime(), event.getAction(), event.getX() + mPopupX,
+                        .getEventTime(), event.getAction(), event.getX() + mPopupX,
                 event.getY() + mPopupY, event.getPressure(), event.getSize(),
                 event.getMetaState(), event.getXPrecision(), event
                         .getYPrecision(), event.getDeviceId(), event
@@ -559,35 +599,30 @@ public class SkbContainer extends RelativeLayout implements OnTouchListener {
          * generate first {@link #LONG_PRESS_KEYNUM1} key events.
          */
         public static final int LONG_PRESS_TIMEOUT1 = 500;
-
-        /**
-         * When user presses a key for a long time, after the first
-         * {@link #LONG_PRESS_KEYNUM1} key events, this timeout interval will be
-         * used.
-         */
-        private static final int LONG_PRESS_TIMEOUT2 = 100;
-
-        /**
-         * When user presses a key for a long time, after the first
-         * {@link #LONG_PRESS_KEYNUM2} key events, this timeout interval will be
-         * used.
-         */
-        private static final int LONG_PRESS_TIMEOUT3 = 100;
-
         /**
          * When user presses a key for a long time, after the first
          * {@link #LONG_PRESS_KEYNUM1} key events, timeout interval
          * {@link #LONG_PRESS_TIMEOUT2} will be used instead.
          */
         public static final int LONG_PRESS_KEYNUM1 = 1;
-
         /**
          * When user presses a key for a long time, after the first
          * {@link #LONG_PRESS_KEYNUM2} key events, timeout interval
          * {@link #LONG_PRESS_TIMEOUT3} will be used instead.
          */
         public static final int LONG_PRESS_KEYNUM2 = 3;
-
+        /**
+         * When user presses a key for a long time, after the first
+         * {@link #LONG_PRESS_KEYNUM1} key events, this timeout interval will be
+         * used.
+         */
+        private static final int LONG_PRESS_TIMEOUT2 = 100;
+        /**
+         * When user presses a key for a long time, after the first
+         * {@link #LONG_PRESS_KEYNUM2} key events, this timeout interval will be
+         * used.
+         */
+        private static final int LONG_PRESS_TIMEOUT3 = 100;
         SkbContainer mSkbContainer;
 
         private int mResponseTimes = 0;

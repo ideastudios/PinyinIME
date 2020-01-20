@@ -15,6 +15,9 @@ android {
                 cppFlags ""
             }
         }
+        aaptOptions {
+            noCompress "dat"
+        }
     }
     buildTypes {
         release {

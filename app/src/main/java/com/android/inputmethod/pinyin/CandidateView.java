@@ -270,7 +270,7 @@ public class CandidateView extends View {
     }
 
     public void initialize(ArrowUpdater arrowUpdater, BalloonHint balloonHint,
-            GestureDetector gestureDetector, CandidateViewListener cvListener) {
+                           GestureDetector gestureDetector, CandidateViewListener cvListener) {
         mArrowUpdater = arrowUpdater;
         mBalloonHint = balloonHint;
         mGestureDetector = gestureDetector;
@@ -311,13 +311,13 @@ public class CandidateView extends View {
     /**
      * Show a page in the decoding result set previously.
      *
-     * @param pageNo Which page to show.
-     * @param activeCandInPage Which candidate should be set as active item.
+     * @param pageNo                Which page to show.
+     * @param activeCandInPage      Which candidate should be set as active item.
      * @param enableActiveHighlight When false, active item will not be
-     *        highlighted.
+     *                              highlighted.
      */
     public void showPage(int pageNo, int activeCandInPage,
-            boolean enableActiveHighlight) {
+                         boolean enableActiveHighlight) {
         if (null == mDecInfo) return;
         mPageNo = pageNo;
         mActiveCandInPage = activeCandInPage;
@@ -361,8 +361,8 @@ public class CandidateView extends View {
     }
 
     private void onSizeChanged() {
-        mContentWidth = getMeasuredWidth() - mPaddingLeft - mPaddingRight;
-        mContentHeight = (int) ((getMeasuredHeight() - mPaddingTop - mPaddingBottom) * 0.95f);
+        mContentWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
+        mContentHeight = (int) ((getMeasuredHeight() - getPaddingTop() - getPaddingBottom()) * 0.95f);
         /**
          * How to decide the font size if the height for display is given?
          * Now it is implemented in a stupid way.
@@ -383,7 +383,7 @@ public class CandidateView extends View {
             mCandidatesPaint.setTextSize(mCandidateTextSize);
             mFmiCandidates = mCandidatesPaint.getFontMetricsInt();
             mSuspensionPointsWidth =
-                mCandidatesPaint.measureText(SUSPENSION_POINTS);
+                    mCandidatesPaint.measureText(SUSPENSION_POINTS);
         } else {
             // Reset the decoding information to update members for painting.
             setDecodingInfo(mDecInfo);
@@ -409,8 +409,8 @@ public class CandidateView extends View {
     private boolean calculatePage(int pageNo) {
         if (pageNo == mPageNoCalculated) return true;
 
-        mContentWidth = getMeasuredWidth() - mPaddingLeft - mPaddingRight;
-        mContentHeight = (int) ((getMeasuredHeight() - mPaddingTop - mPaddingBottom) * 0.95f);
+        mContentWidth = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
+        mContentHeight = (int) ((getMeasuredHeight() -getPaddingTop() - getPaddingBottom()) * 0.95f);
 
         if (mContentWidth <= 0 || mContentHeight <= 0) return false;
 
@@ -497,7 +497,7 @@ public class CandidateView extends View {
 
         mCandRects.removeAllElements();
 
-        float xPos = mPaddingLeft;
+        float xPos = getPaddingLeft();
         int yPos = (getMeasuredHeight() -
                 (mFmiCandidates.bottom - mFmiCandidates.top)) / 2
                 - mFmiCandidates.top;
@@ -521,8 +521,8 @@ public class CandidateView extends View {
             float itemTotalWidth = candidateWidth + 2 * candMargin;
 
             if (mActiveCandInPage == i && mEnableActiveHighlight) {
-                mActiveCellRect.set(xPos, mPaddingTop + 1, xPos
-                        + itemTotalWidth, getHeight() - mPaddingBottom - 1);
+                mActiveCellRect.set(xPos, getPaddingTop() + 1, xPos
+                        + itemTotalWidth, getHeight() - getPaddingBottom() - 1);
                 mActiveCellDrawable.setBounds((int) mActiveCellRect.left,
                         (int) mActiveCellRect.top, (int) mActiveCellRect.right,
                         (int) mActiveCellRect.bottom);
@@ -568,7 +568,7 @@ public class CandidateView extends View {
     }
 
     private String getLimitedCandidateForDrawing(String rawCandidate,
-            float widthToDraw) {
+                                                 float widthToDraw) {
         int subLen = rawCandidate.length();
         if (subLen <= 1) return rawCandidate;
         do {
@@ -582,9 +582,9 @@ public class CandidateView extends View {
     }
 
     private float drawVerticalSeparator(Canvas canvas, float xPos) {
-        mSeparatorDrawable.setBounds((int) xPos, mPaddingTop, (int) xPos
+        mSeparatorDrawable.setBounds((int) xPos, getPaddingTop(), (int) xPos
                 + mSeparatorDrawable.getIntrinsicWidth(), getMeasuredHeight()
-                - mPaddingBottom);
+                - getPaddingBottom());
         mSeparatorDrawable.draw(canvas);
         return mSeparatorDrawable.getIntrinsicWidth();
     }
@@ -650,37 +650,37 @@ public class CandidateView extends View {
         int clickedItemInPage = -1;
 
         switch (event.getAction()) {
-        case MotionEvent.ACTION_UP:
-            clickedItemInPage = mapToItemInPage(x, y);
-            if (clickedItemInPage >= 0) {
-                invalidate();
-                mCvListener.onClickChoice(clickedItemInPage
-                        + mDecInfo.mPageStart.get(mPageNo));
-            }
-            mBalloonHint.delayedDismiss(BalloonHint.TIME_DELAY_DISMISS);
-            break;
+            case MotionEvent.ACTION_UP:
+                clickedItemInPage = mapToItemInPage(x, y);
+                if (clickedItemInPage >= 0) {
+                    invalidate();
+                    mCvListener.onClickChoice(clickedItemInPage
+                            + mDecInfo.mPageStart.get(mPageNo));
+                }
+                mBalloonHint.delayedDismiss(BalloonHint.TIME_DELAY_DISMISS);
+                break;
 
-        case MotionEvent.ACTION_DOWN:
-            clickedItemInPage = mapToItemInPage(x, y);
-            if (clickedItemInPage >= 0) {
-                showBalloon(clickedItemInPage, true);
-                mTimer.startTimer(BalloonHint.TIME_DELAY_SHOW, mPageNo,
-                        clickedItemInPage);
-            }
-            break;
+            case MotionEvent.ACTION_DOWN:
+                clickedItemInPage = mapToItemInPage(x, y);
+                if (clickedItemInPage >= 0) {
+                    showBalloon(clickedItemInPage, true);
+                    mTimer.startTimer(BalloonHint.TIME_DELAY_SHOW, mPageNo,
+                            clickedItemInPage);
+                }
+                break;
 
-        case MotionEvent.ACTION_CANCEL:
-            break;
+            case MotionEvent.ACTION_CANCEL:
+                break;
 
-        case MotionEvent.ACTION_MOVE:
-            clickedItemInPage = mapToItemInPage(x, y);
-            if (clickedItemInPage >= 0
-                    && (clickedItemInPage != mTimer.getActiveCandOfPageToShow() || mPageNo != mTimer
-                            .getPageToShow())) {
-                showBalloon(clickedItemInPage, true);
-                mTimer.startTimer(BalloonHint.TIME_DELAY_SHOW, mPageNo,
-                        clickedItemInPage);
-            }
+            case MotionEvent.ACTION_MOVE:
+                clickedItemInPage = mapToItemInPage(x, y);
+                if (clickedItemInPage >= 0
+                        && (clickedItemInPage != mTimer.getActiveCandOfPageToShow() || mPageNo != mTimer
+                        .getPageToShow())) {
+                    showBalloon(clickedItemInPage, true);
+                    mTimer.startTimer(BalloonHint.TIME_DELAY_SHOW, mPageNo,
+                            clickedItemInPage);
+                }
         }
         return true;
     }
@@ -692,7 +692,7 @@ public class CandidateView extends View {
         int desired_width = (int) (r.right - r.left);
         int desired_height = (int) (r.bottom - r.top);
         mBalloonHint.setBalloonConfig(mDecInfo.mCandidatesList
-                .get(mDecInfo.mPageStart.get(mPageNo) + candPos), 44, true,
+                        .get(mDecInfo.mPageStart.get(mPageNo) + candPos), 44, true,
                 mImeCandidateColor, desired_width, desired_height);
 
         getLocationOnScreen(mLocationTmp);

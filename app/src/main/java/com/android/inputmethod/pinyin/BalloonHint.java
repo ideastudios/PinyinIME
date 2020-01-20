@@ -43,7 +43,10 @@ public class BalloonHint extends PopupWindow {
      * Delayed time to dismiss the balloon hint.
      */
     public static final int TIME_DELAY_DISMISS = 200;
-
+    /**
+     * The content view of the balloon.
+     */
+    BalloonView mBalloonView;
     /**
      * The padding information of the balloon. Because PopupWindow's background
      * can not be changed unless it is dismissed and shown again, we set the
@@ -52,22 +55,14 @@ public class BalloonHint extends PopupWindow {
      * content view.
      */
     private Rect mPaddingRect = new Rect();
-
     /**
      * The context used to create this balloon hint object.
      */
     private Context mContext;
-
     /**
      * Parent used to show the balloon window.
      */
     private View mParent;
-
-    /**
-     * The content view of the balloon.
-     */
-    BalloonView mBalloonView;
-
     /**
      * The measuring specification used to determine its size. Key-press
      * balloons and candidates balloons have different measuring specifications.
@@ -126,19 +121,19 @@ public class BalloonHint extends PopupWindow {
     /**
      * Set configurations to show text label in this balloon.
      *
-     * @param label The text label to show in the balloon.
-     * @param textSize The text size used to show label.
-     * @param textBold Used to indicate whether the label should be bold.
+     * @param label     The text label to show in the balloon.
+     * @param textSize  The text size used to show label.
+     * @param textBold  Used to indicate whether the label should be bold.
      * @param textColor The text color used to show label.
-     * @param width The desired width of the balloon. The real width is
-     *        determined by the desired width and balloon's measuring
-     *        specification.
-     * @param height The desired width of the balloon. The real width is
-     *        determined by the desired width and balloon's measuring
-     *        specification.
+     * @param width     The desired width of the balloon. The real width is
+     *                  determined by the desired width and balloon's measuring
+     *                  specification.
+     * @param height    The desired width of the balloon. The real width is
+     *                  determined by the desired width and balloon's measuring
+     *                  specification.
      */
     public void setBalloonConfig(String label, float textSize,
-            boolean textBold, int textColor, int width, int height) {
+                                 boolean textBold, int textColor, int width, int height) {
         mBalloonView.setTextConfig(label, textSize, textBold, textColor);
         setBalloonSize(width, height);
     }
@@ -146,13 +141,13 @@ public class BalloonHint extends PopupWindow {
     /**
      * Set configurations to show text label in this balloon.
      *
-     * @param icon The icon used to shown in this balloon.
-     * @param width The desired width of the balloon. The real width is
-     *        determined by the desired width and balloon's measuring
-     *        specification.
+     * @param icon   The icon used to shown in this balloon.
+     * @param width  The desired width of the balloon. The real width is
+     *               determined by the desired width and balloon's measuring
+     *               specification.
      * @param height The desired width of the balloon. The real width is
-     *        determined by the desired width and balloon's measuring
-     *        specification.
+     *               determined by the desired width and balloon's measuring
+     *               specification.
      */
     public void setBalloonConfig(Drawable icon, int width, int height) {
         mBalloonView.setIcon(icon);
@@ -196,7 +191,7 @@ public class BalloonHint extends PopupWindow {
     }
 
     public void delayedUpdate(long delay, int locationInParent[],
-            int width, int height) {
+                              int width, int height) {
         mBalloonView.invalidate();
         if (mBalloonTimer.isPending()) {
             mBalloonTimer.removeTimer();
@@ -283,7 +278,7 @@ public class BalloonHint extends PopupWindow {
         private boolean mTimerPending = false;
 
         public void startTimer(long time, int action, int positionInParent[],
-                int width, int height) {
+                               int width, int height) {
             mAction = action;
             if (ACTION_HIDE != action) {
                 mPositionInParent[0] = positionInParent[0];
@@ -315,19 +310,19 @@ public class BalloonHint extends PopupWindow {
 
         public void run() {
             switch (mAction) {
-            case ACTION_SHOW:
-                mParent.getLocationInWindow(mParentLocationInWindow);
-                showAtLocation(mParent, Gravity.LEFT | Gravity.TOP,
-                        mPositionInParent[0], mPositionInParent[1]
-                                + mParentLocationInWindow[1]);
-                break;
-            case ACTION_HIDE:
-                dismiss();
-                break;
-            case ACTION_UPDATE:
-                mParent.getLocationInWindow(mParentLocationInWindow);
-                update(mPositionInParent[0], mPositionInParent[1]
-                        + mParentLocationInWindow[1], mWidth, mHeight);
+                case ACTION_SHOW:
+                    mParent.getLocationInWindow(mParentLocationInWindow);
+                    showAtLocation(mParent, Gravity.LEFT | Gravity.TOP,
+                            mPositionInParent[0], mPositionInParent[1]
+                                    + mParentLocationInWindow[1]);
+                    break;
+                case ACTION_HIDE:
+                    dismiss();
+                    break;
+                case ACTION_UPDATE:
+                    mParent.getLocationInWindow(mParentLocationInWindow);
+                    update(mPositionInParent[0], mPositionInParent[1]
+                            + mParentLocationInWindow[1], mWidth, mHeight);
             }
             mTimerPending = false;
         }
@@ -374,7 +369,7 @@ public class BalloonHint extends PopupWindow {
         }
 
         public void setTextConfig(String label, float fontSize,
-                boolean textBold, int textColor) {
+                                  boolean textBold, int textColor) {
             // Icon should be cleared so that the label will be enabled.
             mIcon = null;
             mLabel = label;
@@ -397,8 +392,8 @@ public class BalloonHint extends PopupWindow {
                 return;
             }
 
-            int measuredWidth = mPaddingLeft + mPaddingRight;
-            int measuredHeight = mPaddingTop + mPaddingBottom;
+            int measuredWidth = getPaddingLeft() + getPaddingRight();
+            int measuredHeight = getPaddingTop() + getPaddingBottom();
             if (null != mIcon) {
                 measuredWidth += mIcon.getIntrinsicWidth();
                 measuredHeight += mIcon.getIntrinsicHeight();
@@ -416,7 +411,8 @@ public class BalloonHint extends PopupWindow {
             }
 
             int maxWidth = Environment.getInstance().getScreenWidth() -
-                    mPaddingLeft - mPaddingRight;
+                    getPaddingLeft() - getPaddingRight();
+            ;
             if (measuredWidth > maxWidth) {
                 measuredWidth = maxWidth;
             }
@@ -439,13 +435,13 @@ public class BalloonHint extends PopupWindow {
                 mIcon.draw(canvas);
             } else if (null != mLabel) {
                 float labelMeasuredWidth = mPaintLabel.measureText(mLabel);
-                float x = mPaddingLeft;
-                x += (width - labelMeasuredWidth - mPaddingLeft - mPaddingRight) / 2.0f;
+                float x = getPaddingLeft();
+                x += (width - labelMeasuredWidth - getPaddingLeft() - getPaddingRight()) / 2.0f;
                 String labelToDraw = mLabel;
-                if (x < mPaddingLeft) {
-                    x = mPaddingLeft;
+                if (x < getPaddingLeft()) {
+                    x = getPaddingLeft();
                     labelToDraw = getLimitedLabelForDrawing(mLabel,
-                            width - mPaddingLeft - mPaddingRight);
+                            width - getPaddingLeft() - getPaddingRight());
                 }
 
                 int fontHeight = mFmi.bottom - mFmi.top;
@@ -456,7 +452,7 @@ public class BalloonHint extends PopupWindow {
         }
 
         private String getLimitedLabelForDrawing(String rawLabel,
-                float widthToDraw) {
+                                                 float widthToDraw) {
             int subLen = rawLabel.length();
             if (subLen <= 1) return rawLabel;
             do {

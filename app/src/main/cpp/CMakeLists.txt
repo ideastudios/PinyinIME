@@ -13,13 +13,10 @@ include_directories(/include)
 # Gradle automatically packages shared libraries with your APK.
 
 add_library( # Sets the name of the library.
-        native-lib
-
+        jni_pinyinime
         # Sets the library as a shared library.
         SHARED
 
-        # Provides a relative path to your source file(s).
-        native-lib.cpp
         android/com_android_inputmethod_pinyin_PinyinDecoderService.cpp
         share/dictbuilder.cpp
         share/dictlist.cpp
@@ -57,7 +54,7 @@ find_library( # Sets the name of the path variable.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-        native-lib
+        jni_pinyinime
 
         # Links the target library to the log library
         # included in the NDK.
